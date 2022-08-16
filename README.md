@@ -34,9 +34,16 @@ module "rds_asset" {
   rds_security_group_ids          = ["<your_security_group_id>"]
   instance_class                  = "db.r6g.large"
 
+  iam_roles = {
+    s3_import = {
+      feature_name = "s3_import"
+      role_arn = "arn:aws:iam::1111111111:role/s3-import-role"
+    }
+  }
+
   instances = {
     writer = {
-      promotion_tier          = 1
+      promotion_tier = 0
     }
   }
 
@@ -288,8 +295,16 @@ module "rds_asset" {
         <td>null</td>
         <td>no</td>
     </tr>
+    <tr>
+        <td>iam_roles</td>
+        <td>Map of IAM roles and supported feature names to associate with the cluster</td>
+        <td>map(map(string))</td>
+        <td>{}</td>
+        <td>no</td>
+    </tr>
 </tbody>
 </table>
+
 
 ## Outputs
 

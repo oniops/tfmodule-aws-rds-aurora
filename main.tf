@@ -80,8 +80,7 @@ resource "aws_rds_cluster_instance" "this" {
   }
 
   # TODO - not sure why this is failing and throwing type mis-match errors
-  # tags = merge(var.tags, lookup(each.value, "tags", {}))
-  tags = merge(var.context.tags,
+   tags = merge(var.context.tags,
     {
       Name    = "${var.cluster_name}-${each.key}"
       Cluster = var.cluster_name
@@ -89,5 +88,10 @@ resource "aws_rds_cluster_instance" "this" {
   )
 }
 
-/*
-*/
+resource "aws_rds_cluster_role_association" "this" {
+  for_each = var.iam_roles
+
+  db_cluster_identifier = try(aws_rds_cluster.this.id, "")
+  feature_name          = lookup(each.value, "feature_name", null)
+  role_arn              = lookup(each.value, "role_arn", null)
+}

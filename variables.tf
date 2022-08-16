@@ -214,3 +214,10 @@ variable "ca_cert_identifier" {
   type        = string
   default     = null
 }
+
+# aws_rds_cluster_role_association
+variable "iam_roles" {
+  description = "Map of IAM roles and supported feature names to associate with the cluster"
+  type        = any
+  default     = {}
+}

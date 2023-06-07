@@ -1,10 +1,16 @@
+locals {
+  serverless         = var.engine_mode == "serverless" ? true : false
+  ignore_credentials = var.replication_source_identifier != "" || var.snapshot_identifier != null
+}
+
 # RDS Cluster
 resource "aws_rds_cluster" "this" {
-  cluster_identifier = var.cluster_name
+  cluster_identifier                  = var.cluster_name
+  global_cluster_identifier           = null # The global cluster identifier specified on aws_rds_global_cluster
   # cluster_identifier_prefix     = ""
   # replication_source_identifier = var.replication_source_identifier > ARN of the source DB cluster or DB instance if this DB cluster is created as a Read Replica
   # source_region                 = var.source_region > The source region for an encrypted replica DB cluster.
-
+  #
   engine                              = var.engine
   engine_mode                         = var.engine_mode
   engine_version                      = var.engine_version
@@ -12,18 +18,23 @@ resource "aws_rds_cluster" "this" {
   enable_http_endpoint                = var.enable_http_endpoint
   kms_key_id                          = var.kms_key_id
   database_name                       = var.database_name
-  master_username                     = var.master_username
-  master_password                     = var.master_password
+  master_username                     = local.ignore_credentials ? null : var.master_username
+  master_password                     = local.ignore_credentials ? null : var.master_password
+  db_cluster_instance_class           = var.engine == "aurora-mysql" ? "" : var.db_cluster_instance_class
   final_snapshot_identifier           = null # DB 클러스터가 삭제될 때의 최종 DB 스냅샷의 이름 으로, 생략하면 최종 스냅샷이 생성되지 않습니다.
   skip_final_snapshot                 = true # DB 클러스터를 삭제하기 전에 최종 DB 스냅샷을 생성할지 여부를 결정합니다.
-  deletion_protection                 = true # var.deletion_protection
+  deletion_protection                 = var.deletion_protection
   backup_retention_period             = var.backup_retention_period
   preferred_backup_window             = var.preferred_backup_window
   preferred_maintenance_window        = var.preferred_maintenance_window
   port                                = var.port
+  availability_zones                  = var.availability_zones
   db_subnet_group_name                = var.db_subnet_group_name
   vpc_security_group_ids              = compact(var.rds_security_group_ids)
-  snapshot_identifier                 = null
+  # iops                                = var.iops
+  # storage_type                        = var.storage_type
+  replication_source_identifier       = var.replication_source_identifier
+  snapshot_identifier                 = var.snapshot_identifier
   storage_encrypted                   = var.storage_encrypted
   apply_immediately                   = var.apply_immediately
   db_cluster_parameter_group_name     = var.db_cluster_parameter_group_name
@@ -33,14 +44,22 @@ resource "aws_rds_cluster" "this" {
   copy_tags_to_snapshot               = var.copy_tags_to_snapshot
   enabled_cloudwatch_logs_exports     = var.enabled_cloudwatch_logs_exports
 
+  lifecycle {
+    ignore_changes = [
+      snapshot_identifier,
+      global_cluster_identifier
+    ]
+  }
+
   tags = merge(var.context.tags,
     {
       Name    = var.cluster_name
       Cluster = var.cluster_name
     }
   )
-}
 
+
+}
 
 # RDS Instance
 resource "aws_rds_cluster_instance" "this" {

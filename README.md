@@ -4,6 +4,7 @@ AWS RDS Aurora 서비스를 생성 하는 테라폼 모듈 입니다.
 
 ## Usage
 
+- context, vpc, rds 모듈을 조합 하여 RDS 클러스터를 프로비저닝 합니다. 
 ```
 module "ctx" {
   source = "git::https://code.bespinglobal.com/scm/op/tfmodule-context.git"
@@ -23,7 +24,7 @@ locals {
   cluster_name = "${module.ctx.name_prefix}-asset-rds"
 }
 
-module "rds_asset" {
+module "rds" {
   source                          = "git::https://code.bespinglobal.com/scm/op/tfmodule-aws-rds-aurora.git"
   context                         = module.ctx.context
   cluster_name                    = local.cluster_name
@@ -50,6 +51,68 @@ module "rds_asset" {
 }
 
 ```
+
+
+- `v1.0.0` 버전의 테라폼 모듈을 지정하여 프로비저닝 하는 경우, 아래와 같이 `ref` 를 명시해야 합니다.
+```hcl
+module "rds" {
+  source                          = "git::https://code.bespinglobal.com/scm/op/tfmodule-aws-rds-aurora.git?ref=v1.0.0"
+  context                         = module.ctx.context
+  cluster_name                    = local.cluster_name
+  engine_version                  = "8.0.mysql_aurora.3.02.0"
+  master_username                 = "root"
+  master_password                 = "root1234"
+  db_subnet_group_name            = "<your_db_subnet_group_name>"
+  rds_security_group_ids          = ["<your_security_group_id>"]
+  instance_class                  = "db.r6g.large"
+
+  iam_roles = {
+    s3_import = {
+      feature_name = "s3_import"
+      role_arn = "arn:aws:iam::1111111111:role/s3-import-role"
+    }
+  }
+
+  instances = {
+    writer = {
+      promotion_tier = 0
+    }
+  }
+
+}
+```
+
+
+- `snapshop` 이미지로 부터 RDS 클러스터를 생성 할 수 있습니다. 다만, engine_version 은 snapshot 이미지의 버전보다 같거나 높아야 합니다.
+```hcl
+module "rds" {
+  source                          = "../../"
+  ## source                          = "git::https://code.bespinglobal.com/scm/op/tfmodule-aws-rds-aurora.git"
+  context                         = module.ctx.context
+  cluster_name                    = local.rds_name
+  engine_version                  = "8.0.mysql_aurora.3.03.1"
+  snapshot_identifier             = "portal-test-rds-2023-06-07"
+  master_username                 = ""
+  master_password                 = ""
+  preferred_backup_window         = "16:23-16:53"
+  preferred_maintenance_window    = "sat:04:00-sat:04:30"
+  db_subnet_group_name            = data.aws_db_subnet_group.rds.name
+  rds_security_group_ids          = [aws_security_group.this.id]
+  enabled_cloudwatch_logs_exports = ["audit", "error"]
+  db_cluster_parameter_group_name = null # aws_rds_cluster_parameter_group.this.name
+  copy_tags_to_snapshot           = true
+  instance_class                  = "db.t4g.medium"
+
+  instances = {
+    writer = {
+      promotion_tier          = 1
+    }
+  }
+
+}
+
+```
+ 
 
 ## Inputs
 

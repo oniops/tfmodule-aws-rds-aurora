@@ -61,6 +61,23 @@ variable "master_password" {
   type        = string
 }
 
+variable "db_cluster_instance_class" {
+  description = <<EOF
+The compute and memory capacity of each DB instance in the Multi-AZ DB cluster, for example db.m6g.xlarge.
+Not all DB instance classes are available in all AWS Regions, or for all database engines.
+It is not supported for DB engine aurora-mysql.
+EOF
+  type        = string
+  default     = ""
+}
+
+
+variable "deletion_protection" {
+  description = "If the DB instance should have deletion protection enabled. The database can't be deleted when this value is set to true. "
+  type        = bool
+  default     = true
+}
+
 variable "backup_retention_period" {
   description = "The days to retain backups for. Default `7`"
   type        = number
@@ -79,6 +96,18 @@ variable "preferred_maintenance_window" {
   default     = "sun:05:00-sun:06:00"
 }
 
+variable "availability_zones" {
+  description = <<EOF
+List of EC2 Availability Zones for the DB cluster storage where DB cluster instances can be created.
+RDS automatically assigns 3 AZs if less than 3 AZs are configured,
+which will show as a difference requiring resource recreation next Terraform apply"
+
+Important] The "db_subnet_group_name" attribute means AZ, so if you specified a value for "db_subnet_group_name", do not set this value.
+EOF
+  type        = list(string)
+  default     = null
+}
+
 variable "db_subnet_group_name" {
   description = "The name of the database subnet group name"
   type        = string
@@ -87,6 +116,33 @@ variable "db_subnet_group_name" {
 variable "rds_security_group_ids" {
   description = "The name of the security grouip id for RDS Cluster"
   type        = list(string)
+}
+
+variable "iops" {
+  description = "The amount of Provisioned IOPS (input/output operations per second) to be initially allocated for each DB instance in the Multi-AZ DB cluster"
+  type        = number
+  default     = 0
+}
+
+variable "replication_source_identifier" {
+  description = "ARN of a source DB cluster or DB instance if this DB cluster is to be created as a Read Replica"
+  type        = string
+  default     = ""
+}
+
+variable "snapshot_identifier" {
+  description = "Specifies whether or not to create this cluster from a snapshot. You can use either the name or ARN when specifying a DB cluster snapshot, or the ARN when specifying a DB snapshot."
+  type        = string
+  default     = null
+}
+
+variable "storage_type" {
+  description = <<EOF
+Specifies the storage type to be associated with the DB cluster.
+This setting is required to create a Multi-AZ DB cluster. Valid values: io1
+EOF
+  type        = string
+  default     = ""
 }
 
 variable "storage_encrypted" {
@@ -110,13 +166,13 @@ variable "db_cluster_parameter_group_name" {
 variable "iam_database_authentication_enabled" {
   description = "Specifies whether or mappings of AWS Identity and Access Management (IAM) accounts to database accounts is enabled"
   type        = bool
-  default     = null
+  default     = false
 }
 
 variable "backtrack_window" {
   description = "The target backtrack window, in seconds. Only available for `aurora` engine currently. To disable backtracking, set this value to 0. Must be between 0 and 259200 (72 hours)"
   type        = number
-  default     = null
+  default     = 0
 }
 
 variable "copy_tags_to_snapshot" {
@@ -221,3 +277,60 @@ variable "iam_roles" {
   type        = any
   default     = {}
 }
+
+# Auto Scaling
+variable "autoscaling_enabled" {
+  description = "Determines whether autoscaling of the cluster read replicas is enabled"
+  type        = bool
+  default     = false
+}
+
+
+variable "autoscaling_max_capacity" {
+  description = "Maximum number of read replicas permitted when autoscaling is enabled"
+  type        = number
+  default     = 2
+}
+
+variable "autoscaling_min_capacity" {
+  description = "Minimum number of read replicas permitted when autoscaling is enabled"
+  type        = number
+  default     = 0
+}
+
+variable "autoscaling_policy_name" {
+  description = "Autoscaling policy name"
+  type        = string
+  default     = "target-metric"
+}
+
+variable "predefined_metric_type" {
+  description = "The metric type to scale on. Valid values are `RDSReaderAverageCPUUtilization` and `RDSReaderAverageDatabaseConnections`"
+  type        = string
+  default     = "RDSReaderAverageCPUUtilization"
+}
+
+variable "autoscaling_scale_in_cooldown" {
+  description = "Cooldown in seconds before allowing further scaling operations after a scale in"
+  type        = number
+  default     = 300
+}
+
+variable "autoscaling_scale_out_cooldown" {
+  description = "Cooldown in seconds before allowing further scaling operations after a scale out"
+  type        = number
+  default     = 300
+}
+
+variable "autoscaling_target_cpu" {
+  description = "CPU threshold which will initiate autoscaling"
+  type        = number
+  default     = 70
+}
+
+variable "autoscaling_target_connections" {
+  description = "Average number of connections threshold which will initiate autoscaling. Default value is 70% of db.r4/r5/r6g.large's default max_connections"
+  type        = number
+  default     = 700
+}
+

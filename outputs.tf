@@ -26,3 +26,6 @@ output "rds_database_master_username" {
   value = aws_rds_cluster.this.master_username
 }
 
+output "availability_zones" {
+  value = aws_rds_cluster.this.availability_zones
+}

@@ -380,3 +380,46 @@ module "rds" {
 | rds_database_name  | RDS database name        |
 | rds_database_port  | RDS lister port          |
 | rds_database_master_username  |  RDS master username     |
+
+
+## Appendix
+
+### RDS 파라미터 그룹 설정
+
+```hcl
+resource "aws_rds_cluster_parameter_group" "mysql8" {
+  name        = "simple-pg"
+  family      = "aurora-mysql8.0"
+
+  parameter {
+    name         = "character_set_client"
+    value        = "utf8"
+  }
+
+  parameter {
+    name         = "character_set_connection"
+    value        = "utf8"
+  }
+
+  parameter {
+    name         = "character_set_database"
+    value        = "utf8"
+  }
+
+  parameter {
+    name         = "character_set_server"
+    value        = "utf8"
+  }
+
+  parameter {
+    name         = "lower_case_table_names"
+    value        = "1"
+    apply_method = "pending-reboot"
+  }
+
+}
+```
+
+위와 같이 `aws_rds_cluster_parameter_group` RDS 파라미터그룹 설정에서 속성 변경에 대해서 `apply_method`를 생략하면 `immediate` 값이 기본으로 적용됩니다.  
+
+주의할 점은 파라미터 속성 유형이 `Static`인 파라미터는 `apply_method`를 `pending-reboot` 만 설정이 가능 합니다. 

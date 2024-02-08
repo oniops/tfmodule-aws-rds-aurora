@@ -38,7 +38,7 @@ resource "aws_rds_cluster" "this" {
   storage_encrypted                   = var.storage_encrypted
   apply_immediately                   = var.apply_immediately
   db_cluster_parameter_group_name     = var.db_cluster_parameter_group_name
-  db_instance_parameter_group_name    = null
+  db_instance_parameter_group_name    = var.db_instance_parameter_group_name
   iam_database_authentication_enabled = var.iam_database_authentication_enabled
   backtrack_window                    = var.backtrack_window
   copy_tags_to_snapshot               = var.copy_tags_to_snapshot
@@ -46,18 +46,20 @@ resource "aws_rds_cluster" "this" {
 
   lifecycle {
     ignore_changes = [
+      # See https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/rds_cluster#replication_source_identifier
+      # Since this is used either in read-replica clusters or global clusters, this should be acceptable to specify
+      replication_source_identifier,
+      # See docs here https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/rds_global_cluster#new-global-cluster-from-existing-db-cluster
+      global_cluster_identifier,
       snapshot_identifier,
-      global_cluster_identifier
+      availability_zones
     ]
   }
 
-  tags = merge(var.context.tags,
-    {
-      Name    = var.cluster_name
-      Cluster = var.cluster_name
-    }
-  )
-
+  tags = merge(var.context.tags, {
+    Name    = var.cluster_name
+    Cluster = var.cluster_name
+  })
 
 }
 
@@ -99,12 +101,10 @@ resource "aws_rds_cluster_instance" "this" {
   }
 
   # TODO - not sure why this is failing and throwing type mis-match errors
-  tags = merge(var.context.tags,
-    {
-      Name    = "${var.cluster_name}-${each.key}"
-      Cluster = var.cluster_name
-    }
-  )
+  tags = merge(var.context.tags, {
+    Name    = "${var.cluster_name}-${each.key}"
+    Cluster = var.cluster_name
+  })
 }
 
 resource "aws_rds_cluster_role_association" "this" {

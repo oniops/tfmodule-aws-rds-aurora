@@ -163,6 +163,12 @@ variable "db_cluster_parameter_group_name" {
   default     = null
 }
 
+variable "db_instance_parameter_group_name" {
+  description = "A parameter group to associate with the database instances"
+  type        = string
+  default     = null
+}
+
 variable "iam_database_authentication_enabled" {
   description = "Specifies whether or mappings of AWS Identity and Access Management (IAM) accounts to database accounts is enabled"
   type        = bool

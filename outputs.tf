@@ -29,3 +29,11 @@ output "rds_database_master_username" {
 output "availability_zones" {
   value = aws_rds_cluster.this.availability_zones
 }
+
+output "cluster_parameter_group" {
+  value = var.create_parameter_group ? try(aws_rds_cluster_parameter_group.this[0].name , "") : ""
+}
+
+output "db_parameter_group" {
+  value = var.create_parameter_group ? try(aws_db_parameter_group.this[0].name, "") : ""
+}

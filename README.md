@@ -103,9 +103,25 @@ module "rds" {
   copy_tags_to_snapshot           = true
   instance_class                  = "db.t4g.medium"
 
+  # Parameter Group
+  create_parameter_group = true
+  parameter_group_family = "aurora-mysql8.0"
+  cluster_parameters     = {
+    bulk_insert_buffer_size        = "184467440"
+    transaction_isolation          = "READ-COMMITTED"
+    innodb_flush_log_at_trx_commit = {
+      value        = "1"
+      apply_method = "pending-reboot"
+    }
+  }
+  db_parameters = {
+    autocommit                      = "0"
+    slow_query_log                  = "1"
+  }
+
   instances = {
     writer = {
-      promotion_tier          = 1
+      promotion_tier = 1
     }
   }
 

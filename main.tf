@@ -1,6 +1,9 @@
 locals {
-  serverless         = var.engine_mode == "serverless" ? true : false
-  ignore_credentials = var.replication_source_identifier != "" || var.snapshot_identifier != null
+  serverless                = var.engine_mode == "serverless" ? true : false
+  ignore_credentials        = var.replication_source_identifier != "" || var.snapshot_identifier != null
+  create_cluster_parameters = var.create_parameter_group && var.cluster_parameters != null ? true : false
+  create_db_parameters      = var.create_parameter_group && var.db_parameters != null ? true : false
+  db_parameter_group_family = var.db_parameter_group_family != null ? var.db_parameter_group_family : var.parameter_group_family
 }
 
 # RDS Cluster
@@ -37,8 +40,8 @@ resource "aws_rds_cluster" "this" {
   snapshot_identifier                 = var.snapshot_identifier
   storage_encrypted                   = var.storage_encrypted
   apply_immediately                   = var.apply_immediately
-  db_cluster_parameter_group_name     = var.db_cluster_parameter_group_name
-  db_instance_parameter_group_name    = var.db_instance_parameter_group_name
+  db_cluster_parameter_group_name     = local.create_cluster_parameters ? try(aws_rds_cluster_parameter_group.this[0].name, var.db_cluster_parameter_group_name) : var.db_cluster_parameter_group_name
+  db_instance_parameter_group_name    = local.create_db_parameters ? try(aws_db_parameter_group.this[0].name, var.db_instance_parameter_group_name) : var.db_instance_parameter_group_name
   iam_database_authentication_enabled = var.iam_database_authentication_enabled
   backtrack_window                    = var.backtrack_window
   copy_tags_to_snapshot               = var.copy_tags_to_snapshot
@@ -61,6 +64,10 @@ resource "aws_rds_cluster" "this" {
     Cluster = var.cluster_name
   })
 
+  depends_on = [
+    aws_rds_cluster_parameter_group.this
+  ]
+
 }
 
 # RDS Instance
@@ -80,7 +87,7 @@ resource "aws_rds_cluster_instance" "this" {
   instance_class                        = lookup(each.value, "instance_class", var.instance_class)
   publicly_accessible                   = lookup(each.value, "publicly_accessible", var.publicly_accessible)
   db_subnet_group_name                  = var.db_subnet_group_name
-  db_parameter_group_name               = lookup(each.value, "db_parameter_group_name", var.db_parameter_group_name)
+  db_parameter_group_name               = local.create_db_parameters ? try(aws_db_parameter_group.this[0].name, var.db_parameter_group_name) : lookup(each.value, "db_parameter_group_name", var.db_parameter_group_name)
   apply_immediately                     = lookup(each.value, "apply_immediately", var.apply_immediately)
   monitoring_role_arn                   = var.monitoring_role_arn
   monitoring_interval                   = lookup(each.value, "monitoring_interval", var.monitoring_interval)
@@ -105,6 +112,10 @@ resource "aws_rds_cluster_instance" "this" {
     Name    = "${var.cluster_name}-${each.key}"
     Cluster = var.cluster_name
   })
+
+  depends_on = [
+    aws_db_parameter_group.this
+  ]
 }
 
 resource "aws_rds_cluster_role_association" "this" {

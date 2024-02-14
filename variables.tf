@@ -340,3 +340,57 @@ variable "autoscaling_target_connections" {
   default     = 700
 }
 
+###############################################################################
+# Parameter Group for Cluster and DB Instances
+###############################################################################
+variable "create_parameter_group" {
+  description = "Create "
+  type        = bool
+  default     = false
+}
+
+variable "parameter_group_family" {
+  description = "The family of the DB cluster parameter group"
+  type        = string
+  default     = null # "aurora-mysql8.0"
+}
+
+variable "db_parameter_group_family" {
+  description = "The family of the DB instance parameter group"
+  type        = string
+  default     = null
+}
+
+variable "cluster_parameters" {
+  type        = any
+  default     = null
+  description = <<EOF
+A collection of DB cluster parameters to apply. Note that parameters may differ from a family to an other
+
+  cluster_parameters = {
+    bulk_insert_buffer_size           = "184467440"
+    join_buffer_size                  = "184467440"
+    transaction_isolation             = "READ-COMMITTED"
+    innodb_flush_log_at_trx_commit = {
+      apply_method = "pending-reboot"
+      value        = "1"
+    }
+  }
+EOF
+}
+
+variable "db_parameters" {
+  type        = any
+  default     = null
+  description = <<EOF
+A collection of DB parameters to apply. Note that parameters may differ from a family to an other
+
+  db_parameters = {
+    autocommit                      = "0"
+    bulk_insert_buffer_size         = "284467440"
+    innodb_lock_wait_timeout        = "120"
+    slow_query_log                  = "1"
+    long_query_time                 = "100"
+  }
+EOF
+}

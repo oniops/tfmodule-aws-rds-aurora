@@ -59,10 +59,14 @@ resource "aws_rds_cluster" "this" {
     ]
   }
 
-  tags = merge(var.context.tags, {
-    Name    = var.cluster_name
-    Cluster = var.cluster_name
-  })
+  tags = merge(
+    var.context.tags,
+    var.cluster_tags,
+    {
+      Name    = var.cluster_name
+      Cluster = var.cluster_name
+    }
+  )
 
   depends_on = [
     aws_rds_cluster_parameter_group.this
@@ -108,10 +112,14 @@ resource "aws_rds_cluster_instance" "this" {
   }
 
   # TODO - not sure why this is failing and throwing type mis-match errors
-  tags = merge(var.context.tags, {
-    Name    = "${var.cluster_name}-${each.key}"
-    Cluster = var.cluster_name
-  })
+  tags = merge(
+    var.context.tags,
+    var.instance_tags,
+    {
+      Name    = "${var.cluster_name}-${each.key}"
+      Cluster = var.cluster_name
+    }
+  )
 
   depends_on = [
     aws_db_parameter_group.this

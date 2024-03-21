@@ -195,9 +195,22 @@ variable "enabled_cloudwatch_logs_exports" {
 
 # aws_rds_cluster_instances
 variable "instances" {
-  description = "Map of cluster instances and any specific/overriding attributes to be created"
   type        = any
   default     = {}
+  description =<<EOF
+Map of cluster instances and any specific/overriding attributes to be created
+
+  instances = {
+    writer = {
+      promotion_tier = 1
+      instance_class = var.instance_class
+    }
+    reader = {
+      promotion_tier = 10
+      instance_class = var.instance_class
+    }
+  }
+EOF
 }
 
 variable "instances_use_identifier_prefix" {
@@ -393,4 +406,14 @@ A collection of DB parameters to apply. Note that parameters may differ from a f
     long_query_time                 = "100"
   }
 EOF
+}
+
+variable "cluster_tags" {
+  type = map(string)
+  default = {}
+}
+
+variable "instance_tags" {
+  type = map(string)
+  default = {}
 }

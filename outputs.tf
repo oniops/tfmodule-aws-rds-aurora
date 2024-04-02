@@ -2,9 +2,43 @@ output "rds_cluster_name" {
   value = aws_rds_cluster.this.cluster_identifier
 }
 
+output "cluster_name" {
+  value = aws_rds_cluster.this.cluster_identifier
+}
+
+output "engine" {
+  value = aws_rds_cluster.this.engine
+}
+
+output "cluster_endpoint" {
+  value = aws_rds_cluster.this.endpoint
+}
+
+output "cluster_reader_endpoint" {
+  value = aws_rds_cluster.this.reader_endpoint
+}
+
+output "cluster_security_group_ids" {
+  value = aws_rds_cluster.this.vpc_security_group_ids
+}
+
+output "database_name" {
+  value = aws_rds_cluster.this.database_name
+}
+
+output "port" {
+  value = aws_rds_cluster.this.port
+}
+
+output "master_username" {
+  value = aws_rds_cluster.this.master_username
+}
+
+# old style
 output "rds_cluster_endpoint" {
   value = aws_rds_cluster.this.endpoint
 }
+
 
 output "rds_cluster_reader_endpoint" {
   value = aws_rds_cluster.this.reader_endpoint
@@ -31,7 +65,7 @@ output "availability_zones" {
 }
 
 output "cluster_parameter_group" {
-  value = var.create_parameter_group ? try(aws_rds_cluster_parameter_group.this[0].name , "") : ""
+  value = var.create_parameter_group ? try(aws_rds_cluster_parameter_group.this[0].name, "") : ""
 }
 
 output "db_parameter_group" {

@@ -72,7 +72,8 @@ resource "aws_rds_cluster" "this" {
   )
 
   depends_on = [
-    aws_rds_cluster_parameter_group.this
+    aws_rds_cluster_parameter_group.this,
+    aws_cloudwatch_log_group.this,
   ]
 
 }
@@ -124,7 +125,8 @@ resource "aws_rds_cluster_instance" "this" {
   )
 
   depends_on = [
-    aws_db_parameter_group.this
+    aws_db_parameter_group.this,
+    aws_cloudwatch_log_group.this,
   ]
 }
 

@@ -1,3 +1,9 @@
+variable "create" {
+  description = "Whether cluster should be created"
+  type        = bool
+  default     = true
+}
+
 variable "cluster_name" {
   description = "The name for RDS cluster"
   type        = string
@@ -70,7 +76,6 @@ EOF
   type        = string
   default     = ""
 }
-
 
 variable "deletion_protection" {
   description = "If the DB instance should have deletion protection enabled. The database can't be deleted when this value is set to true. "
@@ -187,10 +192,11 @@ variable "copy_tags_to_snapshot" {
   default     = null
 }
 
-variable "enabled_cloudwatch_logs_exports" {
-  description = "Set of log types to export to cloudwatch. If omitted, no logs will be exported. The following log types are supported: `audit`, `error`, `general`, `slowquery`, `postgresql`"
-  type        = list(string)
-  default     = ["audit", "error"]
+# see - https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-mysql-write-forwarding.html
+variable "enable_local_write_forwarding" {
+  description = "Whether read replicas can forward write operations to the writer DB instance in the DB cluster. By default, write operations aren't allowed on reader DB instances."
+  type        = bool
+  default     = null
 }
 
 # aws_rds_cluster_instances
@@ -287,7 +293,7 @@ variable "instance_timeouts" {
 variable "ca_cert_identifier" {
   description = "The identifier of the CA certificate for the DB instance"
   type        = string
-  default     = null
+  default     = "rds-ca-rsa2048-g1"
 }
 
 # aws_rds_cluster_role_association
@@ -416,4 +422,26 @@ variable "cluster_tags" {
 variable "instance_tags" {
   type = map(string)
   default = {}
+}
+
+################################################################################
+# CloudWatch Log Group
+################################################################################
+
+variable "create_cloudwatch_log_group" {
+  description = "Determines whether a CloudWatch log group is created for each `enabled_cloudwatch_logs_exports`"
+  type        = bool
+  default     = false
+}
+
+variable "enabled_cloudwatch_logs_exports" {
+  description = "Set of log types to export to cloudwatch. If omitted, no logs will be exported. The following log types are supported: `audit`, `error`, `general`, `slowquery`, `postgresql`"
+  type        = list(string)
+  default     = ["audit", "error"]
+}
+
+variable "retention_in_days" {
+  description = "The number of days to retain CloudWatch logs for the DB instance"
+  type        = number
+  default     = 7
 }

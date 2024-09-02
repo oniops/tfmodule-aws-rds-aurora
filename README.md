@@ -2,6 +2,8 @@
 
 AWS RDS Aurora 서비스를 생성 하는 테라폼 모듈 입니다.
 
+<br>
+
 ## Usage
 
 - context, vpc, rds 모듈을 조합 하여 RDS 클러스터를 프로비저닝 합니다. 
@@ -21,7 +23,7 @@ module "vpc" {
 
 
 locals {
-  cluster_name = "${module.ctx.name_prefix}-asset-rds"
+  cluster_name = "${module.ctx.name_prefix}-demo-rds"
 }
 
 module "rds" {
@@ -53,6 +55,9 @@ module "rds" {
 ```
 
 
+<br>
+
+
 - `v1.0.0` 버전의 테라폼 모듈을 지정하여 프로비저닝 하는 경우, 아래와 같이 `ref` 를 명시해야 합니다.
 ```hcl
 module "rds" {
@@ -82,8 +87,10 @@ module "rds" {
 }
 ```
 
+<br>
 
 - `snapshop` 이미지로 부터 RDS 클러스터를 생성 할 수 있습니다. 다만, engine_version 은 snapshot 이미지의 버전보다 같거나 높아야 합니다.
+
 ```hcl
 module "rds" {
   source                          = "../../"
@@ -128,7 +135,74 @@ module "rds" {
 }
 
 ```
- 
+
+<br>
+
+- Multi-AZ 의 Read-Replica 구성 샘플
+
+```hcl
+locals {
+  cluster_name            = "${module.ctx.name_prefix}-demo-rds"
+  availability_zone_names = [for s in data.aws_subnet.data : s.availability_zone]
+}
+
+module "rds" {
+  source                          = "git::https://code.bespinglobal.com/scm/op/tfmodule-aws-rds-aurora.git?ref=v1.3.0"
+  context                         = module.ctx.context
+  create                          = true
+  cluster_name                    = local.cluster_name
+  engine                          = "aurora-postgresql"
+  engine_version                  = "16.3"
+  snapshot_identifier             = null
+  master_username                 = "root"
+  master_password                 = data.aws_ssm_parameter.rds_password.value
+  database_name                   = "demo"
+  port                            = "5432"
+  instance_class                  = "db.t4g.medium"
+  db_subnet_group_name            = "rds-demo-sn"
+  rds_security_group_ids          = [aws_security_group.this.id]
+  copy_tags_to_snapshot           = true
+  # Maintenance
+  backup_retention_period         = "7"
+  preferred_backup_window         = "02:00-04:00"
+  preferred_maintenance_window    = "sat:04:00-sat:04:30"
+  # Logging
+  create_cloudwatch_log_group     = true
+  enabled_cloudwatch_logs_exports = ["postgresql"]
+  # Enhanced monitoring
+  performance_insights_enabled    = true
+  monitoring_role_arn             = aws_iam_role.this.arn
+  monitoring_interval             = 60
+  ca_cert_identifier              = "rds-ca-rsa2048-g1"
+  apply_immediately               = false
+  # Parameter Group
+  create_parameter_group          = true
+  parameter_group_family          = "aurora-postgresql16"
+  cluster_parameters              = {}
+  db_parameters                   = {}
+  # Multi-AZ only support RDS
+  availability_zones              = local.availability_zone_names
+
+  instances = {
+    writer = {
+      promotion_tier = 1
+      instance_class = "db.t4g.medium"
+    }
+    reader = {
+      promotion_tier = 10
+      instance_class = "db.t4g.medium"
+    }
+  }
+
+  iam_roles = {
+    rdsS3Role = {
+      role_arn = aws_iam_role.rdsS3.arn
+    }
+  }
+}
+```
+
+<br>
 
 ## Inputs
 
@@ -385,6 +459,9 @@ module "rds" {
 </table>
 
 
+<br>
+
+
 ## Outputs
 
 | Name | Description              |
@@ -397,6 +474,8 @@ module "rds" {
 | rds_database_port  | RDS lister port          |
 | rds_database_master_username  |  RDS master username     |
 
+
+<br>
 
 ## Appendix
 

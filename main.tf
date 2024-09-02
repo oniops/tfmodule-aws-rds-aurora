@@ -1,13 +1,15 @@
 locals {
-  serverless                = var.engine_mode == "serverless" ? true : false
+  create                    = var.create
+  serverless                = var.engine_mode == "serverless"
   ignore_credentials        = var.replication_source_identifier != "" || var.snapshot_identifier != null
-  create_cluster_parameters = var.create_parameter_group && var.cluster_parameters != null ? true : false
-  create_db_parameters      = var.create_parameter_group && var.db_parameters != null ? true : false
+  create_cluster_parameters = local.create && var.create_parameter_group && var.cluster_parameters != null ? true : false
+  create_db_parameters      = local.create && var.create_parameter_group && var.db_parameters != null ? true : false
   db_parameter_group_family = var.db_parameter_group_family != null ? var.db_parameter_group_family : var.parameter_group_family
 }
 
 # RDS Cluster
 resource "aws_rds_cluster" "this" {
+  count                               = local.create ? 1 : 0
   cluster_identifier                  = var.cluster_name
   global_cluster_identifier           = null # The global cluster identifier specified on aws_rds_global_cluster
   # cluster_identifier_prefix     = ""
@@ -28,7 +30,7 @@ resource "aws_rds_cluster" "this" {
   skip_final_snapshot                 = true # DB 클러스터를 삭제하기 전에 최종 DB 스냅샷을 생성할지 여부를 결정합니다.
   deletion_protection                 = var.deletion_protection
   backup_retention_period             = var.backup_retention_period
-  preferred_backup_window             = var.preferred_backup_window
+  preferred_backup_window             = local.serverless ? null : var.preferred_backup_window
   preferred_maintenance_window        = var.preferred_maintenance_window
   port                                = var.port
   availability_zones                  = var.availability_zones
@@ -46,6 +48,7 @@ resource "aws_rds_cluster" "this" {
   backtrack_window                    = var.backtrack_window
   copy_tags_to_snapshot               = var.copy_tags_to_snapshot
   enabled_cloudwatch_logs_exports     = var.enabled_cloudwatch_logs_exports
+  enable_local_write_forwarding       = var.enable_local_write_forwarding
 
   lifecycle {
     ignore_changes = [
@@ -76,16 +79,15 @@ resource "aws_rds_cluster" "this" {
 
 # RDS Instance
 resource "aws_rds_cluster_instance" "this" {
-  for_each = var.instances
+  for_each = { for k, v in var.instances : k => v if local.create && !local.serverless }
 
   # Notes:
   # Do not set preferred_backup_window - its set at the cluster level and will error if provided here
-
   # identifier                            = var.instances_use_identifier_prefix ? null : lookup(each.value, "identifier", "${var.name}-${each.key}")
   # identifier_prefix                     = var.instances_use_identifier_prefix ? lookup(each.value, "identifier_prefix", "${var.cluster_name}-") : null
   # identifier_prefix                     = "${var.cluster_name}-"
   identifier                            = "${var.cluster_name}-${each.key}"
-  cluster_identifier                    = try(aws_rds_cluster.this.id, "")
+  cluster_identifier                    = try(aws_rds_cluster.this[0].id, "")
   engine                                = var.engine
   engine_version                        = var.engine_version
   instance_class                        = lookup(each.value, "instance_class", var.instance_class)
@@ -127,15 +129,15 @@ resource "aws_rds_cluster_instance" "this" {
 }
 
 resource "aws_rds_cluster_role_association" "this" {
-  for_each = var.iam_roles
+  for_each = { for k, v in var.iam_roles : k => v if local.create }
 
-  db_cluster_identifier = try(aws_rds_cluster.this.id, "")
+  db_cluster_identifier = try(aws_rds_cluster.this[0].id, "")
   feature_name          = lookup(each.value, "feature_name", "")
   role_arn              = lookup(each.value, "role_arn", null)
 
   lifecycle {
     create_before_destroy = true
-    ignore_changes        = []
+    ignore_changes = []
   }
 
   depends_on = [

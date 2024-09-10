@@ -109,7 +109,7 @@ which will show as a difference requiring resource recreation next Terraform app
 
 Important] The "db_subnet_group_name" attribute means AZ, so if you specified a value for "db_subnet_group_name", do not set this value.
 EOF
-  type        = list(string)
+  type = list(string)
   default     = null
 }
 
@@ -120,7 +120,7 @@ variable "db_subnet_group_name" {
 
 variable "rds_security_group_ids" {
   description = "The name of the security grouip id for RDS Cluster"
-  type        = list(string)
+  type = list(string)
 }
 
 variable "iops" {
@@ -202,8 +202,8 @@ variable "enable_local_write_forwarding" {
 # aws_rds_cluster_instances
 variable "instances" {
   type        = any
-  default     = {}
-  description =<<EOF
+  default = {}
+  description = <<EOF
 Map of cluster instances and any specific/overriding attributes to be created
 
   instances = {
@@ -286,8 +286,8 @@ variable "promotion_tier" {
 
 variable "instance_timeouts" {
   description = "Create, update, and delete timeout configurations for the cluster instance(s)"
-  type        = map(string)
-  default     = {}
+  type = map(string)
+  default = {}
 }
 
 variable "ca_cert_identifier" {
@@ -300,7 +300,7 @@ variable "ca_cert_identifier" {
 variable "iam_roles" {
   description = "Map of IAM roles and supported feature names to associate with the cluster"
   type        = any
-  default     = {}
+  default = {}
 }
 
 # Auto Scaling
@@ -380,6 +380,18 @@ variable "db_parameter_group_family" {
   default     = null
 }
 
+variable "cluster_parameter_group_name" {
+  description = "The cluster parameter group name"
+  type        = string
+  default     = null
+}
+
+variable "instance_parameter_group_name" {
+  description = "The instance parameter group name"
+  type        = string
+  default     = null
+}
+
 variable "cluster_parameters" {
   type        = any
   default     = null
@@ -436,8 +448,8 @@ variable "create_cloudwatch_log_group" {
 
 variable "enabled_cloudwatch_logs_exports" {
   description = "Set of log types to export to cloudwatch. If omitted, no logs will be exported. The following log types are supported: `audit`, `error`, `general`, `slowquery`, `postgresql`"
-  type        = list(string)
-  default     = ["audit", "error"]
+  type = list(string)
+  default = ["audit", "error"]
 }
 
 variable "retention_in_days" {

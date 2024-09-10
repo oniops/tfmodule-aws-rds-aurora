@@ -1,6 +1,6 @@
 locals {
-  cluster_parameter_name    = "${var.cluster_name}-pg"
-  instance_parameter_name   = "${var.cluster_name}-instance-pg"
+  cluster_parameter_name    = var.cluster_parameter_group_name == null ? "${var.cluster_name}-pg" : var.cluster_parameter_group_name
+  instance_parameter_name   = var.instance_parameter_group_name == null ? "${var.cluster_name}-instance-pg" : var.instance_parameter_group_name
 }
 
 resource "aws_rds_cluster_parameter_group" "this" {

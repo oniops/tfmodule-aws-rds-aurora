@@ -2,6 +2,9 @@ locals {
   create                    = var.create
   serverless                = var.engine_mode == "serverless"
   ignore_credentials        = var.replication_source_identifier != "" || var.snapshot_identifier != null
+  # TODO required creation condition - seonbo.shim
+  # create_cluster_parameters = local.create && var.create_parameter_group && var.cluster_parameters != null ? true : false
+  # create_db_parameters      = local.create && var.create_parameter_group && var.db_parameters != null && var.instance_parameter_group_name == null ? true : false
   create_cluster_parameters = local.create && var.create_parameter_group && var.cluster_parameters != null && var.cluster_parameter_group_name == null ? true : false
   create_db_parameters      = local.create && var.create_parameter_group && var.db_parameters != null ? true : false
   db_parameter_group_family = var.db_parameter_group_family != null ? var.db_parameter_group_family : var.parameter_group_family

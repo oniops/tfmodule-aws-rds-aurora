@@ -2,7 +2,7 @@ locals {
   create                    = var.create
   serverless                = var.engine_mode == "serverless"
   ignore_credentials        = var.replication_source_identifier != "" || var.snapshot_identifier != null
-  create_cluster_parameters = local.create && var.create_parameter_group && var.cluster_parameters != null ? true : false
+  create_cluster_parameters = local.create && var.create_parameter_group && var.cluster_parameters != null && var.cluster_parameter_group_name == null ? true : false
   create_db_parameters      = local.create && var.create_parameter_group && var.db_parameters != null ? true : false
   db_parameter_group_family = var.db_parameter_group_family != null ? var.db_parameter_group_family : var.parameter_group_family
 }
@@ -84,10 +84,9 @@ resource "aws_rds_cluster_instance" "this" {
 
   # Notes:
   # Do not set preferred_backup_window - its set at the cluster level and will error if provided here
-  # identifier                            = var.instances_use_identifier_prefix ? null : lookup(each.value, "identifier", "${var.name}-${each.key}")
   # identifier_prefix                     = var.instances_use_identifier_prefix ? lookup(each.value, "identifier_prefix", "${var.cluster_name}-") : null
   # identifier_prefix                     = "${var.cluster_name}-"
-  identifier                            = "${var.cluster_name}-${each.key}"
+  identifier                            = format("%s-%s", var.cluster_name, lookup(each.value, "instance_name", each.key))
   cluster_identifier                    = try(aws_rds_cluster.this[0].id, "")
   engine                                = var.engine
   engine_version                        = var.engine_version
@@ -119,7 +118,7 @@ resource "aws_rds_cluster_instance" "this" {
     var.context.tags,
     var.instance_tags,
     {
-      Name    = "${var.cluster_name}-${each.key}"
+      Name    = format("%s-%s", var.cluster_name, lookup(each.value, "instance_name", each.key))
       Cluster = var.cluster_name
     }
   )

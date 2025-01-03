@@ -457,3 +457,20 @@ variable "retention_in_days" {
   type        = number
   default     = 7
 }
+
+variable "cloudwatch_logs_retention_in_days" {
+  type        = map(number)
+  default     = {}
+  description = <<EOF
+The number of days to retain CloudWatch logs exports for the DB instance
+
+  cloudwatch_logs_retention_in_days = {
+    audit       = 365
+    error       = 14
+    general     = 14
+    slowquery   = 14
+    postgresql  = 7
+  }
+EOF
+
+}

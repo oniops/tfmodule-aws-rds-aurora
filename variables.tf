@@ -199,6 +199,13 @@ variable "enable_local_write_forwarding" {
   default     = null
 }
 
+# see - https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-global-database-write-forwarding.html
+variable "enable_global_write_forwarding" {
+  description = "Whether cluster should forward writes to an associated global cluster. Applied to secondary clusters to enable them to forward writes to an aws_rds_global_cluster's primary cluster."
+  type        = bool
+  default     = null
+}
+
 # aws_rds_cluster_instances
 variable "instances" {
   type        = any

@@ -49,6 +49,7 @@ resource "aws_rds_cluster" "this" {
   copy_tags_to_snapshot                 = var.copy_tags_to_snapshot
   enabled_cloudwatch_logs_exports       = var.enabled_cloudwatch_logs_exports
   enable_local_write_forwarding         = var.enable_local_write_forwarding
+  enable_global_write_forwarding        = var.enable_global_write_forwarding
   performance_insights_enabled          = var.performance_insights_enabled
   performance_insights_kms_key_id       = var.performance_insights_kms_key_id
   performance_insights_retention_period = var.performance_insights_retention_period

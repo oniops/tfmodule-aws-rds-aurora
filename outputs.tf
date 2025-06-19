@@ -6,6 +6,10 @@ output "cluster_name" {
   value = try(aws_rds_cluster.this[0].cluster_identifier, "")
 }
 
+output "instance_identifiers" {
+  value =  try([for instance in aws_rds_cluster_instance.this : instance.identifier], [])
+}
+
 output "engine" {
   value = try(aws_rds_cluster.this[0].engine, "")
 }

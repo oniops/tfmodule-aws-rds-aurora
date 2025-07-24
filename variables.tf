@@ -408,6 +408,12 @@ variable "instance_parameter_group_name" {
   default     = null
 }
 
+variable "instance_parameter_group_description" {
+  description = "The instance parameter group description"
+  type        = string
+  default     = "RDS default instance parameter group"
+}
+
 variable "cluster_parameters" {
   type        = any
   default     = null

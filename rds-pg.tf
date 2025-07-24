@@ -27,7 +27,7 @@ resource "aws_db_parameter_group" "this" {
   count       = local.create_db_parameters ? 1 : 0
   name        = local.instance_parameter_name
   family      = local.db_parameter_group_family
-  description = "RDS default instance parameter group"
+  description = var.instance_parameter_group_description # "RDS default instance parameter group"
 
   dynamic "parameter" {
     for_each = keys(var.db_parameters)

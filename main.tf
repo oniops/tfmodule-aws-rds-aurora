@@ -122,7 +122,7 @@ resource "aws_rds_cluster_instance" "this" {
     var.context.tags,
     var.instance_tags,
     {
-      Name    = format("%s-%s", var.cluster_name, coalesce(lookup(each.value, "instance_name", each.key), each.key))
+      Name    = coalesce(lookup(each.value, "instance_identifier", null), "${var.cluster_name}-${lookup(each.value, "instance_name", each.key)}")
       Cluster = var.cluster_name
     }
   )

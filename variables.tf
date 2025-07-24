@@ -215,12 +215,15 @@ Map of cluster instances and any specific/overriding attributes to be created
 
   instances = {
     writer = {
-      promotion_tier = 1
-      instance_class = var.instance_class
+      promotion_tier      = 1
+      instance_class      = var.instance_class
+      instance_name       = "write01"                   # in case of name of instance
+      instance_identifier = "my-aurora-cluster-write01" # in case of fullname of instance
     }
     reader = {
-      promotion_tier = 10
-      instance_class = var.instance_class
+      promotion_tier      = 10
+      instance_class      = var.instance_class
+                                                        # in case of no define instance_name, use key for instance name
     }
   }
 EOF
@@ -391,6 +394,12 @@ variable "cluster_parameter_group_name" {
   description = "The cluster parameter group name"
   type        = string
   default     = null
+}
+
+variable "cluster_parameter_group_description" {
+  description = "The cluster parameter group name"
+  type        = string
+  default     = "RDS default cluster parameter group"
 }
 
 variable "instance_parameter_group_name" {

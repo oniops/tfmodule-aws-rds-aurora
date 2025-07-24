@@ -7,8 +7,7 @@ resource "aws_rds_cluster_parameter_group" "this" {
   count       = local.create_cluster_parameters ? 1 : 0
   name        = local.cluster_parameter_name
   family      = var.parameter_group_family
-  description = "RDS default cluster parameter group"
-
+  description = var.cluster_parameter_group_description
   dynamic "parameter" {
     for_each = keys(var.cluster_parameters)
     content {

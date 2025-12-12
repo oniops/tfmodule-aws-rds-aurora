@@ -8,5 +8,7 @@ resource "aws_cloudwatch_log_group" "this" {
   skip_destroy      = null
   log_group_class   = null
 
-  tags = var.context.tags
+  tags = merge(var.context.tags,
+    { Name = "/aws/rds/cluster/${var.cluster_name}/${each.value}" }
+  )
 }

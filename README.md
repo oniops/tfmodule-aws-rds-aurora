@@ -260,6 +260,13 @@ module "rds" {
         <td>no</td>
     </tr>
     <tr>
+        <td>storage_type</td>
+        <td>Specifies the storage type for the DB cluster. Valid values: `aurora`, `aurora-iopt1`, `io1`. Defaults to: `aurora`</td>
+        <td>string</td>
+        <td>aurora</td>
+        <td>no</td>
+    </tr>
+    <tr>
         <td>database_name</td>
         <td>Name for an automatically created database on cluster creation</td>
         <td>string</td>

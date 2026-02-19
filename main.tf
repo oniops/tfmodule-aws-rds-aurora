@@ -37,7 +37,7 @@ resource "aws_rds_cluster" "this" {
   db_subnet_group_name                  = var.db_subnet_group_name
   vpc_security_group_ids                = compact(var.rds_security_group_ids)
   # iops                                = var.iops
-  # storage_type                        = var.storage_type
+  storage_type                          = var.storage_type
   replication_source_identifier         = var.replication_source_identifier
   snapshot_identifier                   = var.snapshot_identifier
   storage_encrypted                     = var.storage_encrypted

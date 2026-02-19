@@ -143,11 +143,11 @@ variable "snapshot_identifier" {
 
 variable "storage_type" {
   description = <<EOF
-Specifies the storage type to be associated with the DB cluster.
-This setting is required to create a Multi-AZ DB cluster. Valid values: io1
+Specifies the storage type for the DB cluster.
+Use "aurora" or "aurora-iopt1" for Aurora clusters, and "io1" for Multi-AZ DB clusters.
 EOF
   type        = string
-  default     = ""
+  default     = "aurora"
 }
 
 variable "storage_encrypted" {
